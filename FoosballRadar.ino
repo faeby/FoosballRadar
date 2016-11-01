@@ -1,3 +1,4 @@
+#include <PhotodiodeTrigger.h>
 #include <LiquidCrystal.h>
 #include <Wire.h> 
 #include <LiquidCrystal_I2C.h>
@@ -26,6 +27,9 @@ bool endLaserBrokenCurrent;
 bool endLaserBrokenLast;
 
 float best = 0.0;
+
+PhotodiodeTrigger startPhotodiode(startLaserPin, laserBrokenValue);
+PhotodiodeTrigger endPhotodiode(endLaserPin, laserBrokenValue);
 
 // Distance between the 2 lasers in cm
 float laserDistance = 10;
@@ -71,7 +75,7 @@ void loop() {
   //Serial.println(myValue);
   
   // Read PhotoDiod Start
-  startLaserBrokenCurrent = analogRead(startLaserPin) <= laserBrokenValue;
+  startLaserBrokenCurrent = startPhotodiode.triggered();
   
   if (startLaserBrokenCurrent && !startLaserBrokenLast) {
     startTrigger = millis();
@@ -83,7 +87,7 @@ void loop() {
     startLaserBrokenLast = false;
   }
   
-  endLaserBrokenCurrent = analogRead(endLaserPin) <= laserBrokenValue;
+  endLaserBrokenCurrent = endPhotodiode.triggered();
   
   if (endLaserBrokenCurrent && !endLaserBrokenLast) {
     Serial.println("End Laser: broken");
@@ -115,7 +119,6 @@ void loop() {
     Serial.println("End Laser: No more broken");
     endLaserBrokenLast = false;
   }
-  
 }
 
 void reDrawDisplay(float best, float current) {
